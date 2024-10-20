@@ -1,0 +1,141 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding:0;
+    font-family: 'Oswald', sans-serif;
+}
+
+
+body {
+    background-color: #1C1C1F;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.header_section_mp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20vh;
+    gap: 5vh;
+}
+
+.header_section_mp h1 {
+    color: #2E7D32; 
+    font-size: 2em;
+    font-weight: bold; 
+    margin-bottom: 10px; 
+}
+
+
+.find_txt {
+    width: 50wh; 
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em; 
+}
+
+.find_btn {
+    background-color: #4CAF50; 
+    border: none; 
+    color: white; 
+    padding: 20px 30px;
+    text-align: center; 
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.find_btn:hover {
+    background-color: #45a049;
+}
+
+.find_btn:active {
+    background-color: #3e8e41;
+}
+
+.nav_container nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 2rem;
+    padding-top: 2rem;
+    gap: 2rem;
+    height: 10vh; 
+}
+
+
+.nav_container a {
+    color: #2E7D32;
+    font-size: 1.5em;
+    padding-bottom: 1vw;
+}
+
+
+
+@media screen and (max-width: 768px) {
+    .main_container {
+        width: 95%;
+        margin-top: 5vh;
+        height: 70vh;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .main_container {
+        width: 100%;
+        margin-top: 5vh;
+        height: 60vh;
+    }
+}
+
+ h1 {
+    color: #2E7D32; 
+    font-size: 2em;
+    font-weight: bold; 
+    margin-bottom: 10px; 
+}
+
+.championList {
+    list-style: none;
+    padding: 2vw;
+}
+
+.championList li {
+    background: #f4f4f4;
+    margin: 0.5rem 0;    
+    padding: 0.625rem;
+    border-radius: 0.3125rem;
+    font-size: 1.1rem;
+    padding-left: 2vw;
+}
+
+.main_container {
+    margin: 0 auto;
+    max-width: 800px;
+    border: 3px solid black;
+    margin-top: 10vh;
+    background-color: white;
+    box-sizing: border-box;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.main_container h1 {
+    margin-top: 10vh;
+}
+
+.main_container img {
+    padding-top: 10vh;
+}
+
+.main_container p {
+    margin-bottom: 5vh;
+    font-size: 1.5rem;
+}
