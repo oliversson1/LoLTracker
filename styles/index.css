@@ -131,7 +131,12 @@ body {
     margin-top: 10vh;
 }
 
-.main_container img {
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.main_container img{
     padding-top: 10vh;
 }
 
