@@ -27,8 +27,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 5vh;
-  margin-top: 5vh;
+  margin: 5vh;
   text-align: center;
 }
 
@@ -90,7 +89,7 @@ body {
   text-decoration: none;
 }
 
-nav img {
+.nav img {
   width: 4vw; 
   height: auto;
   max-width: 100px;
@@ -219,4 +218,131 @@ img {
   .nav_container img {
     width: 18vw;
   }
+}
+
+/* Základné nastavenie pre kontajner */
+.favorite-champions-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #7e4444;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+
+.add-favorite {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.add-favorite select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fafafa;
+  transition: border 0.3s ease;
+}
+
+.add-favorite select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.add-favorite button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.add-favorite button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.add-favorite button:not(:disabled):hover {
+  background-color: #0056b3;
+}
+
+.favorite-list ul {
+  list-style: none;
+  padding: 0;
+}
+.favorite-list li {
+  background-color: #fff;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.favorite-list li:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.favorite-list li:hover {
+  background-color: #f1f1f1;
+}
+
+.favorite-list li span {
+  font-size: 1rem;
+  color: #555;
+}
+
+.favorite-list li:last-child {
+  margin-bottom: 0;
+}
+
+.favorite-list li {
+  font-style: italic;
+  text-align: center;
+  color: #777;
+}
+.favorite-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.champion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.champion-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.champion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }

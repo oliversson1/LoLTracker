@@ -1,13 +1,21 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import summonerIcon from "../assets/icon.png";
 
-export default function summonerpage() {
+export default function SummonerPage() {
+    const location = useLocation();
+    const { account, summoner } = location.state || {}; 
 
-    return(
+    if (!account) {
+        return <p>No summoner data available. Please search again.</p>;
+    }
+
+    return (
         <div className="main_container">
-        <img src={summonerIcon} alt="player icon" />
-        <h1 className="summoners_name">Summoner's name</h1>
-        <p>level 226</p>
+            <img src={summonerIcon} alt="player icon" />
+            <h1 className="summoners_name">{account.gameName}</h1>
+            <p>Level {summoner.summonerLevel|| "Unknown"}</p>
+            <p>Region: {account.tagLine || "Unknown"}</p> 
         </div>
     );
 }

@@ -1,0 +1,16 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model FavoriteChampion {
+  id      Int    @id @default(autoincrement())
+  name    String
+  role    String
+  note    String? // Optional column for the note (nullable)
+}
+
