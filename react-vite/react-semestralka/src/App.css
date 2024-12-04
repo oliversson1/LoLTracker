@@ -28,11 +28,12 @@ body {
   justify-content: center;
   align-items: center;
   margin: 5vh;
+  gap: 3vh;
   text-align: center;
 }
 
 .header_section_mp h1 {
-  color: #2E7D32;
+  color: #4A90E2;
   font-size: 2em;
   font-weight: bold;
   margin-bottom: 10px;
@@ -49,7 +50,7 @@ body {
 }
 
 .find_btn {
-  background-color: #4CAF50;
+  background-color: #4A90E2;
   border: none;
   color: white;
   padding: 20px 30px;
@@ -59,13 +60,6 @@ body {
   margin-top: 10px;
 }
 
-.find_btn:hover {
-  background-color: #45a049;
-}
-
-.find_btn:active {
-  background-color: #3e8e41;
-}
 
 .nav_container nav {
   display: flex;
@@ -138,9 +132,9 @@ img {
   list-style: none;
   padding: 0;
   margin: 0;
-  width: 100%;  /* Nastavíme na 100% šírky rodiča */
-  max-height: 60vh;  /* Maximálna výška */
-  overflow-y: auto;  /* Vertikálny scroll */
+  width: 100%;  
+  max-height: 60vh;  
+  overflow-y: auto;
 }
 
 .championList li {
@@ -220,13 +214,12 @@ img {
   }
 }
 
-/* Základné nastavenie pre kontajner */
 .favorite-champions-container {
   font-family: 'Arial', sans-serif;
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #7e4444;
+  background-color: #4A90E2;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
@@ -246,6 +239,10 @@ h2 {
   margin-bottom: 20px;
 }
 
+.add-favorite h2 {
+  color: #4A90E2;
+}
+
 .add-favorite select {
   width: 100%;
   padding: 10px;
@@ -253,7 +250,7 @@ h2 {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: #fafafa;
+  background-color: #4A90E2;
   transition: border 0.3s ease;
 }
 

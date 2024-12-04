@@ -34,6 +34,11 @@ function FavoriteChampionsPage() {
   const addFavoriteChampion = () => {
     const champion = champions.find(champ => champ.id === selectedChampion);
     if (!champion) return;
+    const exists = favoriteChampions.some(champ => champ.id === champion.id);
+    if (exists) {
+      alert(`${champion.name} je už v zozname obľúbených!`);
+      return;
+    }
   
     axios
       .post('http://localhost:5000/api/favorite-champions', {
@@ -45,9 +50,10 @@ function FavoriteChampionsPage() {
         setSelectedChampion('');
       })
       .catch(error => {
-        console.error('Error adding favorite champion:', error);
+        alert('Error adding favorite champion: ' + error.message);
       });
   };
+  
   
   const deleteChampion = (id) => {
     axios
@@ -71,21 +77,22 @@ function FavoriteChampionsPage() {
         setEditNote('');
       })
       .catch(error => {
-        console.error('Error updating champion:', error);
+        alert('Error updating champion: ' + error.message);
       });
   };
+  
 
   return (
     <div className="favorite-champions-container">
-      <h1>Obľúbení šampióni</h1>
+      <h1>Favorite Champions</h1>
   
       <div className="add-favorite">
-        <h2>Vyberte šampióna</h2>
+        <h2>Choose a champion</h2>
         <select
           value={selectedChampion}
           onChange={(e) => setSelectedChampion(e.target.value)}
         >
-          <option value="">-- Vyberte šampióna --</option>
+          <option value="">Choose a champion</option>
           {champions.map(champion => (
             <option key={champion.id} value={champion.id}>
               {champion.name}
@@ -98,10 +105,10 @@ function FavoriteChampionsPage() {
       </div>
   
       <div className="favorite-list">
-        <h2>Vaši obľúbení šampióni</h2>
+        <h2>Your favorite champions</h2>
         <ul>
           {favoriteChampions.length === 0 ? (
-            <li>Žiadni obľúbení šampióni</li>
+            <li>You have no favorite champions</li>
           ) : (
             favoriteChampions.map(champ => (
               <li key={champ.id} className="champion-item">
@@ -113,7 +120,7 @@ function FavoriteChampionsPage() {
                       onChange={(e) => setEditNote(e.target.value)}
                       placeholder="Zadajte poznámku"
                     />
-                    <button onClick={() => saveEdit(champ.id)}>Uložiť</button>
+                    <button onClick={() => saveEdit(champ.id)}>Save</button>
                   </div>
                 ) : (
                   <div className="champion-info">
@@ -127,11 +134,11 @@ function FavoriteChampionsPage() {
                       {champ.note && <span> ({champ.note})</span>}
                     </div>
                     <div>
-                      <button onClick={() => deleteChampion(champ.id)}>Zmazať</button>
+                      <button onClick={() => deleteChampion(champ.id)}>Delete</button>
                       <button onClick={() => {
                         setEditChampion(champ.id);
                         setEditNote(champ.note || '');
-                      }}>Upraviť</button>
+                      }}>Edit</button>
                     </div>
                   </div>
                 )}

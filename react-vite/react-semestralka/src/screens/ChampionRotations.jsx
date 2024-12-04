@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default function ChampionRotations() {
     const [champions, setChampions] = useState([]);
-
+    
     async function fetchChampionRotations() {
         try {
             const apiKey = import.meta.env.VITE_RIOT_API_KEY;

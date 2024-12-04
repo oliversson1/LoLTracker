@@ -2,12 +2,10 @@ import express from 'express';
 import axios from 'axios';
 import cors from 'cors';
 
-require('dotenv').config();
-
 const app = express();
 app.use(cors());
 
-const RIOT_API_KEY = import.meta.env.VITE_RIOT_API_KEY;
+const RIOT_API_KEY ="RGAPI-4e0789c0-a056-4f73-aed5-aceb8ae3dcdd";
 
 async function fetchChampionRotations(req, res) {
     try {
