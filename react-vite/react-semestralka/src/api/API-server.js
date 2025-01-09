@@ -5,7 +5,7 @@ import cors from 'cors';
 const app = express();
 app.use(cors());
 
-const RIOT_API_KEY ="RGAPI-4e0789c0-a056-4f73-aed5-aceb8ae3dcdd";
+const RIOT_API_KEY ="RGAPI-8c5ee03d-a463-43c1-a87b-d38b1202ec0b";
 
 async function fetchChampionRotations(req, res) {
     try {

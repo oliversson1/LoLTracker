@@ -100,7 +100,7 @@ function FavoriteChampionsPage() {
           ))}
         </select>
         <button disabled={!selectedChampion} onClick={addFavoriteChampion}>
-          Pridať do obľúbených
+          Add to favorites
         </button>
       </div>
   

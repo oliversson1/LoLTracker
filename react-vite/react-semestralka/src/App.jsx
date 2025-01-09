@@ -14,6 +14,7 @@ function App() {
   return (
     <Router>
       <Navbar />
+      <div style={{ paddingTop: '10rem' }}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/champions" element={<ChampionsPage />} />
@@ -22,6 +23,7 @@ function App() {
         <Route path='/championrotations' element={<ChampionRotations />} />
         <Route path='/FavoriteChampionsPage' element={<FavoriteChampionsPage />} />
       </Routes>
+      </div>
     </Router>
   );
 }

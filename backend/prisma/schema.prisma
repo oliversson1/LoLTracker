@@ -7,10 +7,20 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model User {
+  id        Int               @id @default(autoincrement())
+  username  String            @unique
+  password  String
+  email     String?
+  favoriteChampions FavoriteChampion[]
+}
+
 model FavoriteChampion {
-  id      Int    @id @default(autoincrement())
-  name    String
-  role    String
-  note    String? // Optional column for the note (nullable)
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String?
+  note      String?
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
 
