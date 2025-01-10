@@ -43,7 +43,6 @@ export default function Login() {
             : "Login successful!"
         );
         if (!isRegistering) {
-          // Save the token or perform further actions after login
           console.log("Token:", data.token);
         }
       } else {
