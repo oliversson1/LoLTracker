@@ -23,19 +23,24 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("Loading...");
-
+  
     try {
-      const endpoint = isRegistering ? "/api/register" : "/api/login";
+
+      const endpoint = isRegistering
+        ? "http://localhost:5000/api/register"
+        : "http://localhost:5000/api/login";
+  
       const response = await fetch(endpoint, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         setMessage(
           isRegistering
@@ -43,7 +48,8 @@ export default function Login() {
             : "Login successful!"
         );
         if (!isRegistering) {
-          console.log("Token:", data.token);
+          console.log("AccessToken:", data.accessToken);
+
         }
       } else {
         setMessage(data.error || "Something went wrong.");
@@ -53,6 +59,7 @@ export default function Login() {
       setMessage("An error occurred. Please try again.");
     }
   };
+  
 
   return (
     <div style={{ maxWidth: "400px", margin: "auto", textAlign: "center" }}>
@@ -80,18 +87,6 @@ export default function Login() {
             style={{ width: "100%", padding: "10px" }}
           />
         </div>
-        {isRegistering && (
-          <div style={{ marginBottom: "10px" }}>
-            <input
-              type="email"
-              name="email"
-              placeholder="Email (optional)"
-              value={formData.email}
-              onChange={handleInputChange}
-              style={{ width: "100%", padding: "10px" }}
-            />
-          </div>
-        )}
         <button type="submit" style={{ width: "100%", padding: "10px" }}>
           {isRegistering ? "Register" : "Login"}
         </button>

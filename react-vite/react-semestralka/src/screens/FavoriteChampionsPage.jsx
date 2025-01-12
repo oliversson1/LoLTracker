@@ -1,99 +1,112 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function FavoriteChampionsPage() {
-  const [champions, setChampions] = useState([]); 
-  const [selectedChampion, setSelectedChampion] = useState('');
+export default function FavoriteChampionsPage() {
+  const [champions, setChampions] = useState([]);        
+  const [selectedChampion, setSelectedChampion] = useState(''); 
   const [favoriteChampions, setFavoriteChampions] = useState([]); 
-  const [editChampion, setEditChampion] = useState(null); 
-  const [editNote, setEditNote] = useState(''); 
+  const [editChampion, setEditChampion] = useState(null);  
+  const [editNote, setEditNote] = useState('');            
+
+
+  const api = axios.create({
+    baseURL: 'http://localhost:5000',
+    withCredentials: true,
+  });
+
 
   useEffect(() => {
     axios
       .get('https://ddragon.leagueoflegends.com/cdn/13.21.1/data/en_US/champion.json')
-      .then(response => {
+      .then((response) => {
         const championsList = Object.values(response.data.data);
         setChampions(championsList);
       })
-      .catch(error => {
-        console.error('Error fetching champions:', error);
+      .catch((error) => {
+        console.error('Error fetching champions from Data Dragon:', error);
       });
   }, []);
+
 
   useEffect(() => {
-    axios
-      .get('http://localhost:5000/api/favorite-champions')
-      .then(response => {
+    api
+      .get('/api/favorite-champions')  
+      .then((response) => {
         setFavoriteChampions(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching favorite champions:', error);
       });
-  }, []);
+  }, [api]);
 
   const addFavoriteChampion = () => {
-    const champion = champions.find(champ => champ.id === selectedChampion);
+
+    const champion = champions.find((ch) => ch.id === selectedChampion);
     if (!champion) return;
-    const exists = favoriteChampions.some(champ => champ.id === champion.id);
+
+
+    const exists = favoriteChampions.some((ch) => ch.name === champion.name);
     if (exists) {
-      alert(`${champion.name} je už v zozname obľúbených!`);
+      alert(`${champion.name} is already in your favorite list!`);
       return;
     }
-  
-    axios
-      .post('http://localhost:5000/api/favorite-champions', {
+
+    api
+      .post('/api/favorite-champions', {
         name: champion.name,
         role: champion.tags[0],
       })
-      .then(response => {
-        setFavoriteChampions([...favoriteChampions, response.data]);
+      .then((response) => {
+
+        setFavoriteChampions((prev) => [...prev, response.data]);
         setSelectedChampion('');
       })
-      .catch(error => {
+      .catch((error) => {
         alert('Error adding favorite champion: ' + error.message);
       });
   };
-  
-  
-  const deleteChampion = (id) => {
-    axios
-      .delete(`http://localhost:5000/api/favorite-champions/${id}`)
+
+
+  const deleteChampion = (championId) => {
+    api
+      .delete(`/api/favorite-champions/${championId}`)
       .then(() => {
-        setFavoriteChampions(favoriteChampions.filter((champ) => champ.id !== id));
+        setFavoriteChampions((prev) => prev.filter((champ) => champ.id !== championId));
       })
-      .catch(error => console.error('Error deleting champion:', error));
+      .catch((error) => {
+        console.error('Error deleting champion:', error);
+      });
   };
 
-  const saveEdit = (id) => {
-    axios
-      .put(`http://localhost:5000/api/favorite-champions/${id}`, { note: editNote })
+  const saveEdit = (championId) => {
+    api
+      .put(`/api/favorite-champions/${championId}`, { note: editNote })
       .then(() => {
-        setFavoriteChampions(
-          favoriteChampions.map(champ => 
-            champ.id === id ? { ...champ, note: editNote } : champ
+        setFavoriteChampions((prev) =>
+          prev.map((champ) =>
+            champ.id === championId ? { ...champ, note: editNote } : champ
           )
         );
         setEditChampion(null);
         setEditNote('');
       })
-      .catch(error => {
+      .catch((error) => {
         alert('Error updating champion: ' + error.message);
       });
   };
-  
 
   return (
     <div className="favorite-champions-container">
       <h1>Favorite Champions</h1>
-  
+
       <div className="add-favorite">
-        <h2>Choose a champion</h2>
+        <h2>Select a champion</h2>
         <select
           value={selectedChampion}
           onChange={(e) => setSelectedChampion(e.target.value)}
         >
           <option value="">Choose a champion</option>
-          {champions.map(champion => (
+          {champions.map((champion) => (
             <option key={champion.id} value={champion.id}>
               {champion.name}
             </option>
@@ -103,14 +116,14 @@ function FavoriteChampionsPage() {
           Add to favorites
         </button>
       </div>
-  
+
       <div className="favorite-list">
         <h2>Your favorite champions</h2>
         <ul>
           {favoriteChampions.length === 0 ? (
-            <li>You have no favorite champions</li>
+            <li>No favorite champions yet.</li>
           ) : (
-            favoriteChampions.map(champ => (
+            favoriteChampions.map((champ) => (
               <li key={champ.id} className="champion-item">
                 {editChampion === champ.id ? (
                   <div>
@@ -118,7 +131,7 @@ function FavoriteChampionsPage() {
                       type="text"
                       value={editNote}
                       onChange={(e) => setEditNote(e.target.value)}
-                      placeholder="Zadajte poznámku"
+                      placeholder="Add note"
                     />
                     <button onClick={() => saveEdit(champ.id)}>Save</button>
                   </div>
@@ -135,10 +148,14 @@ function FavoriteChampionsPage() {
                     </div>
                     <div>
                       <button onClick={() => deleteChampion(champ.id)}>Delete</button>
-                      <button onClick={() => {
-                        setEditChampion(champ.id);
-                        setEditNote(champ.note || '');
-                      }}>Edit</button>
+                      <button
+                        onClick={() => {
+                          setEditChampion(champ.id);
+                          setEditNote(champ.note || '');
+                        }}
+                      >
+                        Edit
+                      </button>
                     </div>
                   </div>
                 )}
@@ -149,7 +166,4 @@ function FavoriteChampionsPage() {
       </div>
     </div>
   );
-  
 }
-
-export default FavoriteChampionsPage;

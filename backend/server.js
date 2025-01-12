@@ -10,8 +10,9 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(cookieParser());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+
 
 
 const JWT_SECRET = process.env.JWT_SECRET;        
@@ -100,6 +101,13 @@ app.post('/api/login', async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000, 
     });
 
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: false,
+      maxAge: 15 * 60 * 1000,
+    });
+
     res.json({ message: 'Login successful', accessToken });
   } catch (error) {
     console.error(error);
@@ -154,25 +162,154 @@ app.post('/api/logout', async (req, res) => {
 
 /* -------------------------------- AUTENTIFIKACIA -------------------------------- */
 const authenticate = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Authorization token is required' });
-  }
+  const { accessToken } = req.cookies; 
 
-  const token = authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ error: 'Invalid token format' });
+  if (!accessToken) {
+    return res.status(401).json({ error: 'No access token cookie' });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(accessToken, JWT_SECRET);
     req.userId = decoded.userId;
     next();
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ error: 'Invalid or expired token' });
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
+
+
+/* --------------------------------- TOURNAMENT ENDPOINTY --------------------------------- */
+
+/* ----------------------------------- Vytvorenie turnaja ----------------------------------- */
+app.post('/api/tournaments/:tournamentId/leave', authenticate, async (req, res) => {
+  const { tournamentId } = req.params;
+
+  try {
+    const participant = await prisma.tournamentParticipant.findFirst({
+      where: { tournamentId: parseInt(tournamentId), userId: req.userId },
+    });
+
+    if (!participant) {
+      return res.status(400).json({ error: 'You are not registered in this tournament' });
+    }
+
+    await prisma.tournamentParticipant.delete({
+      where: { id: participant.id },
+    });
+
+    res.status(200).json({ message: 'Successfully left the tournament' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error leaving tournament');
+  }
+});
+
+/* ----------------------------------- Vymazanie turnaja (iba pre tvorcu) ----------------------------------- */
+app.delete('/api/tournaments/:tournamentId', authenticate, async (req, res) => {
+  const { tournamentId } = req.params;
+
+  try {
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: parseInt(tournamentId) },
+      include: { creator: true },
+    });
+
+    if (!tournament) {
+      return res.status(404).json({ error: 'Tournament not found' });
+    }
+
+    if (tournament.creatorId !== req.userId) {
+      return res.status(403).json({ error: 'Only the creator can delete this tournament' });
+    }
+
+    await prisma.tournament.delete({
+      where: { id: parseInt(tournamentId) },
+    });
+
+    res.status(200).json({ message: 'Tournament deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting tournament');
+  }
+});
+
+
+/* ----------------------------------- Získanie počtu účastníkov v turnaji ----------------------------------- */
+app.get('/api/tournaments', async (req, res) => {
+  try {
+    const tournaments = await prisma.tournament.findMany({
+      include: {
+        participants: {
+          include: { user: true } 
+        },
+        creator: true, 
+      },
+    });
+
+    res.json(tournaments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error getting tournaments');
+  }
+});
+
+
+/* ----------------------------------- Pripojenie používateľa k turnaju ----------------------------------- */
+app.post('/api/tournaments/:tournamentId/join', authenticate, async (req, res) => {
+  const { tournamentId } = req.params;
+
+  try {
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: parseInt(tournamentId) },
+    });
+
+    if (!tournament) {
+      return res.status(404).json({ error: 'Tournament not found' });
+    }
+    const existingParticipant = await prisma.tournamentParticipant.findFirst({
+      where: { tournamentId: parseInt(tournamentId), userId: req.userId },
+    });
+
+    if (existingParticipant) {
+      return res.status(400).json({ error: 'You are already registered in this tournament' });
+    }
+    await prisma.tournamentParticipant.create({
+      data: {
+        tournamentId: parseInt(tournamentId),
+        userId: req.userId,
+      },
+    });
+
+    res.status(201).json({ message: 'Successfully joined the tournament' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error joining tournament');
+  }
+});
+
+/* ----------------------------------- Odhlásenie sa z turnaja ----------------------------------- */
+app.delete('/api/tournaments/:tournamentId/leave', authenticate, async (req, res) => {
+  const { tournamentId } = req.params;
+
+  try {
+    const participant = await prisma.tournamentParticipant.findFirst({
+      where: { tournamentId: parseInt(tournamentId), userId: req.userId },
+    });
+
+    if (!participant) {
+      return res.status(400).json({ error: 'You are not registered in this tournament' });
+    }
+
+    await prisma.tournamentParticipant.delete({
+      where: { id: participant.id },
+    });
+
+    res.status(200).json({ message: 'Successfully left the tournament' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error leaving tournament');
+  }
+});
 
 /* --------------------------------- FAVORITE CHAMPION ENDPOINTY --------------------------------- */
 app.post('/api/favorite-champions', authenticate, async (req, res) => {
@@ -201,7 +338,7 @@ app.post('/api/favorite-champions', authenticate, async (req, res) => {
   }
 });
 
-// Získanie obľúbených šampiónov
+
 app.get('/api/favorite-champions', authenticate, async (req, res) => {
   try {
     const champions = await prisma.favoriteChampion.findMany({
@@ -214,7 +351,7 @@ app.get('/api/favorite-champions', authenticate, async (req, res) => {
   }
 });
 
-// Úprava poznámky
+
 const updateSchema = z.object({
   note: z.string().regex(/^[A-Za-z\s]*$/).optional(),
 });
@@ -240,7 +377,7 @@ app.put('/api/favorite-champions/:id', authenticate, async (req, res) => {
   }
 });
 
-// Odstránenie šampióna
+
 app.delete('/api/favorite-champions/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   try {

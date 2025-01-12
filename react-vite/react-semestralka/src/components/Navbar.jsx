@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import axios from 'axios';
@@ -6,23 +6,26 @@ import NavLogo from '../assets/navlogo.png';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const [username, setUsername] = useState(Cookies.get('username') || ''); 
+
+  useEffect(() => {
+    const checkUser = () => {
+      setUsername(Cookies.get('username') || '');
+    };
+
+    const interval = setInterval(checkUser, 1000);
+    return () => clearInterval(interval); 
+  }, []);
 
   const handleLogout = async () => {
     try {
-      const username = Cookies.get('username');
+      await axios.post('http://localhost:5000/api/logout', null, { withCredentials: true });
 
-      await axios.post('http://localhost:5000/api/logout', null, {
-        withCredentials: true,
-      });
-      Cookies.remove('username');
-
-      alert(`User "${username}" was logged out.`);
-
-      // Presmerujeme na login
+      Cookies.remove('username'); 
+      setUsername(''); 
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      alert('Logout error');
     }
   };
 
@@ -30,19 +33,19 @@ export default function Navbar() {
     <div className="nav_container">
       <nav>
         <img src={NavLogo} alt="navigation logo" />
+        
+        {/* vzdy viditelne*/}
         <Link to="/">Home</Link>
         <Link to="/champions">Champions</Link>
-        <Link to="/summonerpage">Summoner's page</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/championrotations">Champion Rotations</Link>
-        <Link to="/FavoriteChampionsPage">Favorite Champions</Link>
-
-        <button
-          onClick={handleLogout}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'red' }}
-        >
-          Logout
-        </button>
+        <Link to = "TournamentPage"> Tournaments</Link>
+        {username ? (
+          <>
+            <Link to="/FavoriteChampionsPage">Favorite Champions</Link>
+            <button className = "logout_btn" onClick={handleLogout}> Logout ({username}) </button>
+          </>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
       </nav>
     </div>
   );

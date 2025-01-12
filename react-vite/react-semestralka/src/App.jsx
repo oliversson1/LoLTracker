@@ -8,6 +8,7 @@ import HomePage from './screens/home.jsx';
 import Login from './screens/login.jsx';
 import ChampionRotations from './screens/ChampionRotations.jsx';
 import FavoriteChampionsPage from './screens/FavoriteChampionsPage.jsx';
+import TournamentPage from './screens/TournamentPage.jsx';
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<Login/>} />
         <Route path='/championrotations' element={<ChampionRotations />} />
         <Route path='/FavoriteChampionsPage' element={<FavoriteChampionsPage />} />
+        <Route path="/TournamentPage" element={<TournamentPage />} />
       </Routes>
       </div>
     </Router>

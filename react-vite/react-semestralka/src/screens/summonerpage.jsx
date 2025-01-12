@@ -14,8 +14,8 @@ export default function SummonerPage() {
         <div className="main_container">
             <img src={summonerIcon} alt="player icon" />
             <h1 className="summoners_name">{account.gameName}</h1>
-            <p>Level {summoner.summonerLevel|| "Unknown"}</p>
-            <p>Region: {account.tagLine || "Unknown"}</p> 
+            <p>Level {summoner.summonerLevel}</p>
+            <p>Tagline: {account.tagLine}</p> 
         </div>
     );
 }

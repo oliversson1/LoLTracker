@@ -1,11 +1,16 @@
 import express from 'express';
 import axios from 'axios';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
 const app = express();
 app.use(cors());
 
-const RIOT_API_KEY ="RGAPI-8c5ee03d-a463-43c1-a87b-d38b1202ec0b";
+dotenv.config();
+
+const RIOT_API_KEY = process.env.RIOT_API_KEY;
+
+console.log("Loaded Riot API Key:", RIOT_API_KEY); 
 
 async function fetchChampionRotations(req, res) {
     try {
@@ -52,9 +57,9 @@ async function fetchSummonerByPUUID(req, res) {
     }
 }
 
-app.get('/api/lol/platform/v3/champion-rotations', fetchChampionRotations);
-app.get('/api/riot/account/v1/accounts/by-riot-id/:gameName/:tagLine', fetchSummonerByRiotId);
-app.get('/api/lol/summoner/v4/summoners/by-puuid/:puuid', fetchSummonerByPUUID);
+app.get('/riot/lol/platform/v3/champion-rotations', fetchChampionRotations);
+app.get('/riot/riot/account/v1/accounts/by-riot-id/:gameName/:tagLine', fetchSummonerByRiotId);
+app.get('/riot/lol/summoner/v4/summoners/by-puuid/:puuid', fetchSummonerByPUUID);
 
 
 function startServer() {
