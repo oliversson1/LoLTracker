@@ -181,26 +181,27 @@ const authenticate = (req, res, next) => {
 /* --------------------------------- TOURNAMENT ENDPOINTY --------------------------------- */
 
 /* ----------------------------------- Vytvorenie turnaja ----------------------------------- */
-app.post('/api/tournaments/:tournamentId/leave', authenticate, async (req, res) => {
-  const { tournamentId } = req.params;
+app.post('/api/tournaments', authenticate, async (req, res) => {
+  const { name, date } = req.body;
+
+  if (!name || !date) {
+    return res.status(400).json({ error: "Name and date are required." });
+  }
 
   try {
-    const participant = await prisma.tournamentParticipant.findFirst({
-      where: { tournamentId: parseInt(tournamentId), userId: req.userId },
+    const newTournament = await prisma.tournament.create({
+      data: {
+        name,
+        date: new Date(date),
+        status: "upcoming",
+        creatorId: req.userId,
+      },
     });
 
-    if (!participant) {
-      return res.status(400).json({ error: 'You are not registered in this tournament' });
-    }
-
-    await prisma.tournamentParticipant.delete({
-      where: { id: participant.id },
-    });
-
-    res.status(200).json({ message: 'Successfully left the tournament' });
+    res.status(201).json(newTournament);
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error leaving tournament');
+    console.error("Error creating tournament:", error);
+    res.status(500).send("Error creating tournament");
   }
 });
 

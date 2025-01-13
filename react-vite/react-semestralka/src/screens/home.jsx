@@ -5,11 +5,17 @@ import { useNavigate } from "react-router-dom";
 export default function Home() {
     const [gameName, setGameName] = useState("");
     const [tagLine, setTagLine] = useState("");
-    const navigate = useNavigate(); 
+    const [errorMessage, setErrorMessage] = useState("");  
+    const navigate = useNavigate();
+
+    const showError = (message) => {
+        setErrorMessage(message);
+        setTimeout(() => setErrorMessage(""), 3000);  
+    };
 
     async function fetchSummoner(gameName, tagLine) {
         if (!gameName || !tagLine) {
-            alert("Please enter both Summoner's name and Tag Line.");
+            showError("Please enter both Summoner's name and Tag Line.");
             return;
         }
     
@@ -31,21 +37,22 @@ export default function Home() {
             navigate(`/summonerpage`, { state: { account, summoner: summonerData } });
         } catch (error) {
             console.error("Error during API calls:", error?.response?.data || error);
-            alert("An error occurred while fetching summoner data.");
+            showError("An error occurred while fetching summoner data.");
         }
     }
-    
-
 
     return (
         <div className="header_section_mp">
             <h1>Enter Summoner's name:</h1>
+
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+
             <input
                 type="text"
                 className="find_txt"
                 placeholder="Summoner Name"
                 value={gameName}
-                onChange={(e) => setGameName(e.target.value)} 
+                onChange={(e) => setGameName(e.target.value)}
             />
             <input
                 type="text"
@@ -58,7 +65,7 @@ export default function Home() {
                 type="button"
                 className="find_btn"
                 value="Find the Summoner"
-                onClick={() => fetchSummoner(gameName, tagLine)} 
+                onClick={() => fetchSummoner(gameName, tagLine)}
             />
         </div>
     );

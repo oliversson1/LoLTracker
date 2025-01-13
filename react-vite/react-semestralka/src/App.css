@@ -82,11 +82,26 @@ body {
 }
 
 
+.nav_container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #4A90E2;
+  padding: 15px 20px;
+  text-align: center;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px; 
+}
+
 .nav_container nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem;
+  padding: 0.5rem 0;
   gap: 2rem;
   width: 100%;
   position: fixed;
@@ -135,6 +150,11 @@ body {
   box-shadow: 0 0 10px rgba(160, 196, 255, 0.8);
 }
 
+.input_container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; 
+}
 
 .main_container {
   margin-top: 1vh;
@@ -191,18 +211,38 @@ img {
 
 
 @media screen and (max-width: 768px) {
-  .main_container {
-    width: 95%;
-    margin-top: 5vh;
-    height: auto;
+  .nav_container nav {
+    flex-direction: column;
+    align-items: center;
   }
+  body {
+    margin-top: 400px;
+  }
+
+  .nav_container a {
+    font-size: 1em;
+  }
+
+  .main_container {
+    width: 90%;
+    margin: auto;
+  }
+
+  .tournament-container {
+    max-width: 80%; 
+    padding: 15px;
+  }
+
 }
 
-@media screen and (max-width: 430px) {
+@media screen and (max-width: 425px) {
   .main_container {
     width: 100%;
     margin-top: 5vh;
     height: auto;
+  }
+  body {
+    margin-top: 350px;
   }
 }
 
@@ -254,6 +294,35 @@ img {
   .nav_container img {
     width: 18vw;
   }
+}
+
+@media (max-width: 480px) {
+  .tournament-container {
+    width: 70%; 
+    padding: 10px;  
+  }
+
+  .tournament-container h1{
+    font-size: 2em;
+  }
+
+
+  .tournament-item {
+    flex-direction: column; 
+    text-align: center;
+  }
+
+  .tournament-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .create-tournament input, 
+  .create-tournament button {
+    width: 60%; 
+  }
+
 }
 
 .favorite-champions-container {
@@ -384,4 +453,289 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+.tournament-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #4A90E2;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.create-tournament {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.create-tournament h2 {
+  color: #4A90E2;
+}
+
+.create-tournament input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  transition: border 0.3s ease;
+}
+
+.create-tournament input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.create-tournament button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.create-tournament button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.create-tournament button:not(:disabled):hover {
+  background-color: #0056b3;
+}
+
+.tournament-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.tournament-item {
+  background-color: #fff;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tournament-item:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.tournament-item:hover {
+  background-color: #f1f1f1;
+}
+
+.tournament-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color:#777;
+}
+
+.tournament-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tournament-actions button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.join-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.leave-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.login-required-btn {
+  background-color: #ccc;
+  color: white;
+  cursor: not-allowed;
+}
+.create-tournament input {
+  width: 90%;  
+  max-width: 400px; 
+  padding: 8px; 
+  margin: 8px 0; 
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  color: #777;
+  transition: border 0.3s ease;
+  display: block; 
+}
+
+.error-message {
+  background-color: #ff4d4d;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  margin: 10px 0;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.message-box {
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  margin: 10px 0;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.message-box.success {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.message-box.error {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+.championsContainer {
+  font-family: 'Arial', sans-serif;
+  max-width: 30vw;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #4A90E2;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+
+.championList {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; 
+  gap: 10px; 
+}
+
+.championItem {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+}
+
+.championImage {
+  width: 80px; 
+  height: 80px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+
+.paginationControls {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.paginationControls button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  background-color: #007bff;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.paginationControls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .championsContainer {
+    max-width: 60%;
+    padding: 15px;
+  }
+
+  .championItem {
+    width: 120px; 
+  }
+
+  .championImage {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .championsContainer {
+    width: 60%;
+    padding: 10px;
+  }
+
+  .championList {
+    gap: 5px; 
+  }
+
+  .championItem {
+    width: 100px; 
+  }
+
+  .championImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .paginationControls {
+    flex-direction: column;
+    gap: 5px;
+  }
 }

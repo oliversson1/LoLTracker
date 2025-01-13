@@ -6,14 +6,13 @@ export default function FavoriteChampionsPage() {
   const [selectedChampion, setSelectedChampion] = useState(''); 
   const [favoriteChampions, setFavoriteChampions] = useState([]); 
   const [editChampion, setEditChampion] = useState(null);  
-  const [editNote, setEditNote] = useState('');            
-
+  const [editNote, setEditNote] = useState('');
+  const [errorMessage, setErrorMessage] = useState(''); 
 
   const api = axios.create({
     baseURL: 'http://localhost:5000',
     withCredentials: true,
   });
-
 
   useEffect(() => {
     axios
@@ -23,64 +22,61 @@ export default function FavoriteChampionsPage() {
         setChampions(championsList);
       })
       .catch((error) => {
-        console.error('Error fetching champions from Data Dragon:', error);
+        setErrorMessage('Error fetching champions from Data Dragon.');
+        console.error('Error fetching champions:', error);
       });
   }, []);
 
-
   useEffect(() => {
     api
-      .get('/api/favorite-champions')  
+      .get('/api/favorite-champions')
       .then((response) => {
         setFavoriteChampions(response.data);
       })
       .catch((error) => {
-        console.error('Error fetching favorite champions:', error);
+        setErrorMessage('Error fetching favorite champions.');
+        console.error('Error fetching favorites:', error);
       });
-  }, [api]);
+  }, []);
+
+  const showError = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 3000);  
+  };
 
   const addFavoriteChampion = () => {
-
     const champion = champions.find((ch) => ch.id === selectedChampion);
     if (!champion) return;
 
-
-    const exists = favoriteChampions.some((ch) => ch.name === champion.name);
-    if (exists) {
-      alert(`${champion.name} is already in your favorite list!`);
+    if (favoriteChampions.some((ch) => ch.name === champion.name)) {
+      showError(`${champion.name} is already in your favorite list!`);
       return;
     }
 
-    api
-      .post('/api/favorite-champions', {
-        name: champion.name,
-        role: champion.tags[0],
-      })
+    api.post('/api/favorite-champions', { name: champion.name, role: champion.tags[0] })
       .then((response) => {
-
-        setFavoriteChampions((prev) => [...prev, response.data]);
+        setFavoriteChampions([...favoriteChampions, response.data]);
         setSelectedChampion('');
       })
       .catch((error) => {
-        alert('Error adding favorite champion: ' + error.message);
+        showError('Error adding favorite champion.');
+        console.error('Error adding favorite champion:', error);
       });
   };
 
-
   const deleteChampion = (championId) => {
-    api
-      .delete(`/api/favorite-champions/${championId}`)
+    api.delete(`/api/favorite-champions/${championId}`)
       .then(() => {
         setFavoriteChampions((prev) => prev.filter((champ) => champ.id !== championId));
       })
       .catch((error) => {
+        showError('Error deleting champion.');
         console.error('Error deleting champion:', error);
       });
   };
 
   const saveEdit = (championId) => {
-    api
-      .put(`/api/favorite-champions/${championId}`, { note: editNote })
+    api.put(`/api/favorite-champions/${championId}`, { note: editNote })
       .then(() => {
         setFavoriteChampions((prev) =>
           prev.map((champ) =>
@@ -91,13 +87,16 @@ export default function FavoriteChampionsPage() {
         setEditNote('');
       })
       .catch((error) => {
-        alert('Error updating champion: ' + error.message);
+        showError('Error updating champion.');
+        console.error('Error updating champion:', error);
       });
   };
 
   return (
     <div className="favorite-champions-container">
       <h1>Favorite Champions</h1>
+
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
 
       <div className="add-favorite">
         <h2>Select a champion</h2>

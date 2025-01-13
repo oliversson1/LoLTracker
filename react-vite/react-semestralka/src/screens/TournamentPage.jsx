@@ -6,6 +6,8 @@ export default function TournamentPage() {
   const [tournaments, setTournaments] = useState([]);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' | 'error'
   const username = Cookies.get('username');
 
   const api = axios.create({
@@ -16,20 +18,23 @@ export default function TournamentPage() {
   useEffect(() => {
     fetchTournaments();
   }, []);
-  console.log('Tournament data:', tournaments);
 
+  const showMessage = (text, type) => {
+    setMessage(text);
+    setMessageType(type);
+    setTimeout(() => setMessage(''), 3000); 
+  };
 
   const fetchTournaments = () => {
     api.get('/api/tournaments')
       .then(response => {
-        console.log('Fetched tournaments:', response.data); 
         setTournaments(response.data);
       })
       .catch(error => {
         console.error('Error fetching tournaments:', error);
+        showMessage('Error fetching tournaments.', 'error');
       });
   };
-  
 
   const createTournament = () => {
     api.post('/api/tournaments', { name, date })
@@ -37,52 +42,55 @@ export default function TournamentPage() {
         setTournaments([...tournaments, response.data]);
         setName('');
         setDate('');
+        showMessage('Tournament created successfully!', 'success');
       })
       .catch(error => {
-        alert('Error creating tournament: ' + error.response.data.error);
+        showMessage('Error creating tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };
-
 
   const joinTournament = (tournamentId) => {
     api.post(`/api/tournaments/${tournamentId}/join`)
       .then(() => {
-        alert('Joined tournament successfully!');
-        fetchTournaments(); 
+        fetchTournaments();
+        showMessage('Joined tournament successfully!', 'success');
       })
       .catch(error => {
-        alert('Error joining tournament: ' + error.response.data.error);
+        showMessage('Error joining tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };
 
-
   const leaveTournament = (tournamentId) => {
-    api.post(`/api/tournaments/${tournamentId}/leave`)
+    api.delete(`/api/tournaments/${tournamentId}/leave`)
       .then(() => {
-        alert('Left the tournament successfully!');
-        fetchTournaments(); 
+        fetchTournaments();
+        showMessage('Left the tournament successfully!', 'success');
       })
       .catch(error => {
-        alert('Error leaving tournament: ' + error.response.data.error);
+        showMessage('Error leaving tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };
 
   const deleteTournament = (tournamentId) => {
+    if (!window.confirm("Are you sure you want to delete this tournament?")) return;
+
     api.delete(`/api/tournaments/${tournamentId}`)
       .then(() => {
-        alert('Tournament deleted successfully!');
         fetchTournaments();
+        showMessage('Tournament deleted successfully!', 'success');
       })
       .catch(error => {
-        alert('Error deleting tournament: ' + error.response.data.error);
+        showMessage('Error deleting tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };
 
   return (
-    <div>
+    <div className="tournament-container">
       <h1>Tournaments</h1>
 
-      <div>
+      {message && <div className={`message-box ${messageType}`}>{message}</div>}
+
+      <div className="create-tournament">
         <h2>Create a Tournament</h2>
         <input
           type="text"
@@ -95,38 +103,44 @@ export default function TournamentPage() {
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
-        <button onClick={createTournament}>Create Tournament</button>
+        <button onClick={createTournament} disabled={!name || !date}>
+          Create Tournament
+        </button>
       </div>
 
+      <div className="tournament-list">
+        <h2>Available Tournaments</h2>
+        <ul>
+          {tournaments.length === 0 ? (
+            <li>No tournaments available</li>
+          ) : (
+            tournaments.map((tournament) => (
+              <li key={tournament.id} className="tournament-item">
+                <div className="tournament-info">
+                  <strong>{tournament.name}</strong> - {tournament.status} ({new Date(tournament.date).toLocaleDateString()})
+                  <span> | Participants: {tournament.participants?.length ?? 0}</span>
+                </div>
 
-      <h2>Available Tournaments</h2>
-      <ul>
-        {tournaments.length === 0 ? (
-          <li>No tournaments available</li>
-        ) : (
-          tournaments.map((tournament) => (
-            <li key={tournament.id}>
-              <strong>{tournament.name}</strong> - {tournament.status} ({new Date(tournament.date).toLocaleDateString()})
-              <span> | Participants: {tournament.participants.length}</span>
+                <div className="tournament-actions">
+                  {username ? (
+                    tournament.participants?.some(p => p.user?.username === username) ? (
+                      <button className="leave-btn" onClick={() => leaveTournament(tournament.id)}>Leave</button>
+                    ) : (
+                      <button className="join-btn" onClick={() => joinTournament(tournament.id)}>Join</button>
+                    )
+                  ) : (
+                    <button className="login-required-btn" disabled>Login to join</button>
+                  )}
 
-
-              {username ? (
-                tournament.participants.some(p => p.user.username === username) ? (
-                  <button onClick={() => leaveTournament(tournament.id)}>Leave</button>
-                ) : (
-                  <button onClick={() => joinTournament(tournament.id)}>Join</button>
-                )
-              ) : (
-                <button disabled>Login to join</button>
-              )}
-
-              {tournament.creator.username === username && (
-                <button onClick={() => deleteTournament(tournament.id)}>Delete</button>
-              )}
-            </li>
-          ))
-        )}
-      </ul>
+                  {tournament.creator?.username === username && (
+                    <button className="delete-btn" onClick={() => deleteTournament(tournament.id)}>Delete</button>
+                  )}
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
