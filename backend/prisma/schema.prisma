@@ -8,13 +8,17 @@ generator client {
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
-  username   String       @unique
-  password   String
-  refreshToken String?    
+  id                Int          @id @default(autoincrement())
+  username          String       @unique
+  password          String
+  refreshToken      String?
+  role              String       @default("user") 
   favoriteChampions FavoriteChampion[]
-  tournaments Tournament[] @relation("UserTournaments") 
-  tournamentParticipants TournamentParticipant[] 
+  tournaments       Tournament[] @relation("UserTournaments")
+  tournamentParticipants TournamentParticipant[]
+  riotGameName      String?
+  riotTagLine       String?
+  riotPuuid         String?      @unique
 }
 
 
@@ -24,7 +28,7 @@ model FavoriteChampion {
   role      String?
   note      String?
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Tournament {

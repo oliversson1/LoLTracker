@@ -6,23 +6,31 @@ import NavLogo from '../assets/navlogo.png';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState(Cookies.get('username') || ''); 
+  const [username, setUsername] = useState(Cookies.get('username') || '');
+  const [userRole, setUserRole] = useState(Cookies.get('role') || ''); 
 
   useEffect(() => {
     const checkUser = () => {
-      setUsername(Cookies.get('username') || '');
+      const usernameFromCookie = Cookies.get('username');
+      const roleFromCookie = Cookies.get('role');
+
+
+      setUsername(usernameFromCookie || '');
+      setUserRole(roleFromCookie || ''); 
     };
 
     const interval = setInterval(checkUser, 1000);
-    return () => clearInterval(interval); 
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = async () => {
     try {
       await axios.post('http://localhost:5000/api/logout', null, { withCredentials: true });
 
-      Cookies.remove('username'); 
-      setUsername(''); 
+      Cookies.remove('username');
+      Cookies.remove('role'); 
+      setUsername('');
+      setUserRole(''); 
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -34,14 +42,16 @@ export default function Navbar() {
       <nav>
         <img src={NavLogo} alt="navigation logo" />
         
-        {/* vzdy viditelne*/}
         <Link to="/">Home</Link>
         <Link to="/champions">Champions</Link>
-        <Link to = "TournamentPage"> Tournaments</Link>
+        <Link to="/TournamentPage">Tournaments</Link>
+
+        {userRole === 'admin' && <Link to="/Users">Admin Panel</Link>}
+
         {username ? (
           <>
             <Link to="/FavoriteChampionsPage">Favorite Champions</Link>
-            <button className = "logout_btn" onClick={handleLogout}> Logout ({username}) </button>
+            <button className="logout_btn" onClick={handleLogout}>Logout ({username})</button>
           </>
         ) : (
           <Link to="/login">Login</Link>

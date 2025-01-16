@@ -6,7 +6,7 @@ export default function Login() {
     username: "",
     password: "",
   });
-  const [message, setMessage] = useState({ text: "", type: "" }); // text = hláška, type = 'success' | 'error'
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   const toggleForm = () => {
     setIsRegistering((prev) => !prev);

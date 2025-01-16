@@ -108,12 +108,19 @@ app.post('/api/login', async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
+    res.cookie('role', user.role, {
+      httpOnly: false, 
+      sameSite: 'strict',
+      secure: false, 
+    });
+
     res.json({ message: 'Login successful', accessToken });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error logging in');
   }
 });
+
 
 /* ---------------------------------- OBNOVENIE TOKENU ---------------------------------- */
 app.post('/api/token', async (req, res) => {
@@ -325,6 +332,7 @@ app.post('/api/favorite-champions', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Champion already exists.' });
     }
 
+    
     const newChampion = await prisma.favoriteChampion.create({
       data: {
         name,
@@ -389,6 +397,52 @@ app.delete('/api/favorite-champions/:id', authenticate, async (req, res) => {
     res.status(500).send('Error deleting champion');
   }
 });
+
+/*--------------------------------------Získanie všetkých používateľov (pre admin rolu, aby mohli mazať)---------------------------------*/
+/* ---------------------------- Získanie všetkých používateľov (len pre adminov) ---------------------------- */
+app.get('/api/users', authenticate, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied, admin only.' });
+    }
+
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching users');
+  }
+});
+
+/* ---------------------------- Vymazanie používateľa (len pre adminov) ---------------------------- */
+app.delete('/api/users/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied, admin only.' });
+    }
+
+    const userToDelete = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!userToDelete) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await prisma.user.delete({ where: { id: parseInt(id) } });
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting user');
+  }
+});
+
+
 
 const PORT = 5000;
 app.listen(PORT, () => {

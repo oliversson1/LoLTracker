@@ -57,7 +57,7 @@ export default function Home() {
             <input
                 type="text"
                 className="find_txt"
-                placeholder="Tag Line (e.g., EUW)"
+                placeholder="Tag Line (EUNE server only)"
                 value={tagLine}
                 onChange={(e) => setTagLine(e.target.value)}
             />
