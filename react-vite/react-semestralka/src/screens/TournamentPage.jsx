@@ -22,7 +22,7 @@ export default function TournamentPage() {
   const showMessage = (text, type) => {
     setMessage(text);
     setMessageType(type);
-    setTimeout(() => setMessage(''), 3000); 
+    setTimeout(() => setMessage(''), 5000); 
   };
 
   const fetchTournaments = () => {
@@ -45,7 +45,14 @@ export default function TournamentPage() {
         showMessage('Tournament created successfully!', 'success');
       })
       .catch(error => {
-        showMessage('Error creating tournament: ' + (error.response?.data?.error || error.message), 'error');
+        console.error("Create tournament error:", error);
+
+        if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+          const errorMessages = error.response.data.errors.map(err => err.message).join("\n");
+          showMessage(errorMessages, 'error');
+        } else {
+          showMessage('Error creating tournament: ' + (error.response?.data?.error || error.message), 'error');
+        }
       });
   };
 
@@ -56,6 +63,7 @@ export default function TournamentPage() {
         showMessage('Joined tournament successfully!', 'success');
       })
       .catch(error => {
+        console.error("Join tournament error:", error);
         showMessage('Error joining tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };
@@ -67,18 +75,19 @@ export default function TournamentPage() {
         showMessage('Left the tournament successfully!', 'success');
       })
       .catch(error => {
+        console.error("Leave tournament error:", error);
         showMessage('Error leaving tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };
 
   const deleteTournament = (tournamentId) => {
-
     api.delete(`/api/tournaments/${tournamentId}`)
       .then(() => {
         fetchTournaments();
         showMessage('Tournament deleted successfully!', 'success');
       })
       .catch(error => {
+        console.error("Delete tournament error:", error);
         showMessage('Error deleting tournament: ' + (error.response?.data?.error || error.message), 'error');
       });
   };

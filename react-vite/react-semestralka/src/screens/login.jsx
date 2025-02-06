@@ -39,7 +39,7 @@ export default function Login() {
         if (formData.image) {
           body.append("image", formData.image);
         }
-        headers = {};
+        headers = {}; 
       } else {
         body = JSON.stringify({
           username: formData.username,
@@ -79,13 +79,20 @@ export default function Login() {
         }
       } else {
         console.error("Server response error:", data);
-        setMessage({ text: data.error || "Something went wrong.", type: "error" });
+  
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMessages = data.errors.map((err) => err.message).join("\n");
+          setMessage({ text: errorMessages, type: "error" });
+        } else {
+          setMessage({ text: data.error || "Something went wrong.", type: "error" });
+        }
       }
     } catch (error) {
       console.error("Error during submit:", error);
       setMessage({ text: "An error occurred. Please try again.", type: "error" });
     }
   };
+  
   
 
   useEffect(() => {

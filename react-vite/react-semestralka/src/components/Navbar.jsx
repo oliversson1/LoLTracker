@@ -13,8 +13,6 @@ export default function Navbar() {
     const checkUser = () => {
       const usernameFromCookie = Cookies.get('username');
       const roleFromCookie = Cookies.get('role');
-
-
       setUsername(usernameFromCookie || '');
       setUserRole(roleFromCookie || ''); 
     };
@@ -45,14 +43,19 @@ export default function Navbar() {
         <Link to="/">Home</Link>
         <Link to="/champions">Champions</Link>
         <Link to="/TournamentPage">Tournaments</Link>
-
-        {userRole === 'admin' && <Link to="/Users">Admin Panel</Link>}
-
+  
+        {userRole === 'admin' && <Link to="/AdminPanel">Admin Panel</Link>}
+  
         {username ? (
           <>
             <Link to="/FavoriteChampionsPage">Favorite Champions</Link>
             <Link to="/UserProfile">Profile</Link>
-            <button className="logout_btn" onClick={handleLogout}>Logout ({username})</button>
+            
+            {userRole !== 'admin' && <Link to="/BugReporting">Report a Bug</Link>}
+            
+            <button className="logout_btn" onClick={handleLogout}>
+              Logout ({username})
+            </button>
           </>
         ) : (
           <Link to="/login">Login</Link>
@@ -60,4 +63,5 @@ export default function Navbar() {
       </nav>
     </div>
   );
+  
 }

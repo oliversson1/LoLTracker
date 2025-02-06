@@ -9,12 +9,14 @@ import ChampionRotations from './screens/ChampionRotations.jsx';
 import FavoriteChampionsPage from './screens/FavoriteChampionsPage.jsx';
 import TournamentPage from './screens/TournamentPage.jsx';
 import AdminRoute from './routes/AdminRoute.jsx';
-import Users from './screens/Users.jsx';
+import AdminPanel from './screens/AdminPanel.jsx';
 import UserProfile from './screens/UserProfile.jsx';
 import PrivateRoute from './routes/PrivateRoute.jsx';
+import BugReporting from './screens/BugReporting.jsx';
 
 
 function App() {
+  
   return (
     <Router>
       <Navbar />
@@ -51,14 +53,15 @@ function App() {
           />
           
           <Route 
-            path="/Users" 
+            path="/AdminPanel" 
             element={
               <AdminRoute>
-                <Users />
+                <AdminPanel />
               </AdminRoute>
             } 
           />
-          
+        
+
           <Route 
             path="/UserProfile" 
             element={
@@ -67,6 +70,15 @@ function App() {
               </PrivateRoute>
             } 
           />
+          <Route 
+            path="/BugReporting" 
+            element={
+              <PrivateRoute>
+                <BugReporting />
+              </PrivateRoute>
+            } 
+          />
+
         </Routes>
       </div>
     </Router>

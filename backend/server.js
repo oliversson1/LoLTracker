@@ -21,10 +21,10 @@ setInterval(async () => {
       where: { expiresAt: { lt: new Date() } }, 
     });
     if (deletedTokens.count > 0) {
-      console.log(`🗑️ Deleted ${deletedTokens.count} expired refresh tokens.`);
+      console.log(`Deleted ${deletedTokens.count} expired refresh tokens.`);
     }
   } catch (error) {
-    console.error("❌ Error deleting expired refresh tokens:", error);
+    console.error("Error deleting expired refresh tokens:", error);
   }
 }, 60 * 1000); 
 
@@ -56,13 +56,24 @@ function generateRefreshToken(userId) {
 
 
 /* ----------------------------------- REGISTRÁCIA ----------------------------------- */
-app.post('/api/register', upload.single('image'), async (req, res) => {
-  const { username, password } = req.body;
-  const imagePath = req.file ? `/uploads/${req.file.filename}` : null; 
+const registerSchema = z.object({
+  username: z.string()
+    .min(3, "Username must be at least 3 characters long")
+    .max(20, "Username cannot exceed 20 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+  password: z.string()
+    .min(6, "Password must be at least 6 characters long")
+    .max(100, "Password is too long"),
+});
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required.' });
+app.post('/api/register', upload.single('image'), async (req, res) => {
+  const result = registerSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
   }
+
+  const { username, password } = req.body;
+  const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { username } });
@@ -71,12 +82,11 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await prisma.user.create({
       data: {
         username,
         password: hashedPassword,
-        profileImage: imagePath, 
+        profileImage: imagePath,
       },
     });
 
@@ -115,14 +125,14 @@ app.post('/api/login', async (req, res) => {
       where: { userId: user.id }
     });
 
-    const accessToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '2m' });
-    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '10m' });
-    
+    const accessToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '60m' });
+    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '60m' });
+
     await prisma.refreshToken.create({
       data: {
         token: refreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       },
     });
 
@@ -130,21 +140,21 @@ app.post('/api/login', async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: 'strict',
-      maxAge: 10 * 60 * 1000, 
+      maxAge: 60 * 60 * 1000,
     });
 
     res.cookie('username', user.username, {
       httpOnly: false,
       secure: false,
       sameSite: 'strict',
-      maxAge: 10 * 60 * 1000, 
+      maxAge: 60 * 60 * 1000,
     });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       sameSite: 'strict',
       secure: false,
-      maxAge: 2 * 60 * 1000,  
+      maxAge: 60 * 60 * 1000, 
     });
 
     res.cookie('role', user.role, {
@@ -238,29 +248,47 @@ const authenticate = (req, res, next) => {
 /* --------------------------------- TOURNAMENT ENDPOINTY --------------------------------- */
 
 /* ----------------------------------- Vytvorenie turnaja ----------------------------------- */
-app.post('/api/tournaments', authenticate, async (req, res) => {
-  const { name, date } = req.body;
+const today = new Date();
 
-  if (!name || !date) {
-    return res.status(400).json({ error: "Name and date are required." });
+const tournamentSchema = z.object({
+  name: z.string()
+    .min(3, "Tournament name must be at least 3 characters long")
+    .max(50, "Tournament name cannot exceed 50 characters"),
+  date: z.string()
+    .refine((date) => !isNaN(Date.parse(date)), "Invalid date format") 
+    .refine((date) => {
+      const tournamentDate = new Date(date);
+      return tournamentDate >= today;
+    }, "Tournament date must be in the future"),
+});
+
+app.post('/api/tournaments', authenticate, async (req, res) => {
+  const result = tournamentSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
   }
 
+  const { name, date } = req.body;
+  const tournamentDate = new Date(date);
+
   try {
+    const existingTournament = await prisma.tournament.findFirst({ where: { name } });
+
+    if (existingTournament) {
+      return res.status(400).json({ error: "A tournament with this name already exists." });
+    }
+
     const newTournament = await prisma.tournament.create({
-      data: {
-        name,
-        date: new Date(date),
-        status: "upcoming",
-        creatorId: req.userId,
-      },
+      data: { name, date: tournamentDate, status: "upcoming", creatorId: req.userId },
     });
 
     res.status(201).json(newTournament);
   } catch (error) {
     console.error("Error creating tournament:", error);
-    res.status(500).send("Error creating tournament");
+    res.status(500).json({ error: "Internal server error. Please try again later." });
   }
 });
+
 
 /* ----------------------------------- Vymazanie turnaja (iba pre tvorcu) ----------------------------------- */
 app.delete('/api/tournaments/:tournamentId', authenticate, async (req, res) => {
@@ -605,6 +633,63 @@ app.get('/api/summoners/check/:puuid', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Failed to check summoner ownership.' });
   }
 });
+
+/*----------------------------------------------REPORT BUGOV----------------------------------------------*/
+
+app.post('/api/bugs', authenticate, async (req, res) => {
+  const { description } = req.body;
+
+  if (!description) {
+    return res.status(400).json({ error: 'Description is required' });
+  }
+
+  try {
+    const bug = await prisma.bugReport.create({
+      data: {
+        userId: req.userId, // Priradí userId, ak je prihlásený
+        description,
+      },
+    });
+
+    res.status(201).json({ message: 'Bug report created', bug });
+  } catch (error) {
+    console.error('Error creating bug report:', error);
+    res.status(500).json({ error: 'Failed to create bug report' });
+  }
+});
+
+// Získanie všetkých bug reportov
+app.get('/api/bugs', async (req, res) => {
+  try {
+    const bugs = await prisma.bugReport.findMany({
+      include: { user: { select: { username: true } } }, // Pridá meno užívateľa k bug reportu
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(bugs);
+  } catch (error) {
+    console.error('Error fetching bug reports:', error);
+    res.status(500).json({ error: 'Failed to fetch bug reports' });
+  }
+});
+
+app.patch('/api/bugs/:id/resolve', authenticate, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const bug = await prisma.bugReport.update({
+      where: { id: parseInt(id) },
+      data: { status: 'resolved' },
+    });
+
+    res.json({ message: 'Bug report marked as resolved', bug });
+  } catch (error) {
+    console.error('Error updating bug report:', error);
+    res.status(500).json({ error: 'Failed to update bug report' });
+  }
+});
+
+
+
 
 
 

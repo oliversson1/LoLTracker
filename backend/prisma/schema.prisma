@@ -20,6 +20,7 @@ model User {
   riotPuuid            String?        @unique
   refreshTokens        RefreshToken[] 
   profileImage         String?
+  bugReports           BugReport[]
 }
 
 model RefreshToken {
@@ -58,3 +59,15 @@ model TournamentParticipant {
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model BugReport {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  description String
+  status      String   @default("open") // "open" alebo "resolved"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+

@@ -3,9 +3,9 @@ import { Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const PrivateRoute = ({ children }) => {
-  const token = Cookies.get('refreshToken');
+  const name = Cookies.get('username');
   
-    if (token == '') {
+    if (name == '') {
       return <Navigate to="/" />;
     }
   
