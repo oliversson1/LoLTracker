@@ -36,7 +36,7 @@ const UserProfile = () => {
           )}
 
           <div style={{ marginTop: "20px", color: "#A0C4FF" }}>
-            <h3>Linked Summoner</h3>
+            <h3>Linked Summoner:</h3>
             {summoner && summoner.gameName ? (
               <div>
                 <p>

@@ -7,18 +7,11 @@ import NavLogo from '../assets/navlogo.png';
 export default function Navbar() {
   const navigate = useNavigate();
   const [username, setUsername] = useState(Cookies.get('username') || '');
-  const [userRole, setUserRole] = useState(Cookies.get('role') || ''); 
+  const [userRole, setUserRole] = useState(Cookies.get('role') || '');
 
   useEffect(() => {
-    const checkUser = () => {
-      const usernameFromCookie = Cookies.get('username');
-      const roleFromCookie = Cookies.get('role');
-      setUsername(usernameFromCookie || '');
-      setUserRole(roleFromCookie || ''); 
-    };
-
-    const interval = setInterval(checkUser, 1000);
-    return () => clearInterval(interval);
+    setUsername(Cookies.get('username') || '');
+    setUserRole(Cookies.get('role') || '');
   }, []);
 
   const handleLogout = async () => {
@@ -26,9 +19,9 @@ export default function Navbar() {
       await axios.post('http://localhost:5000/api/logout', null, { withCredentials: true });
 
       Cookies.remove('username');
-      Cookies.remove('role'); 
+      Cookies.remove('role');
       setUsername('');
-      setUserRole(''); 
+      setUserRole('');
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -63,5 +56,4 @@ export default function Navbar() {
       </nav>
     </div>
   );
-  
 }
