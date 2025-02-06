@@ -34,7 +34,7 @@ export default function FavoriteChampionsPage() {
         setFavoriteChampions(response.data);
       })
       .catch((error) => {
-        setErrorMessage('Error fetching favorite champions.');
+        setErrorMessage('Error showing favorite champions. Make sure you are logged in.');
         console.error('Error fetching favorites:', error);
       });
   }, []);

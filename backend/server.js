@@ -232,7 +232,7 @@ const authenticate = (req, res, next) => {
   const { accessToken } = req.cookies; 
 
   if (!accessToken) {
-    return res.status(401).json({ error: 'No access token cookie' });
+    return res.status(401).json({ error: 'You are not logged in.' });
   }
 
   try {
@@ -240,8 +240,8 @@ const authenticate = (req, res, next) => {
     req.userId = decoded.userId;
     next();
   } catch (error) {
-    console.log('Invalid or expired access token:', error.message);
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    console.log('Invalid or expired login:', error.message);
+    return res.status(401).json({ error: 'Invalid or expired login' });
   }
 };
 
@@ -636,18 +636,23 @@ app.get('/api/summoners/check/:puuid', authenticate, async (req, res) => {
 
 /*----------------------------------------------REPORT BUGOV----------------------------------------------*/
 
-app.post('/api/bugs', authenticate, async (req, res) => {
-  const { description } = req.body;
+const bugReportSchema = z.object({
+  description: z.string()
+    .min(10, "Description must be at least 10 characters long")
+    .max(500, "Description cannot exceed 500 characters"),
+});
 
-  if (!description) {
-    return res.status(400).json({ error: 'Description is required' });
+app.post('/api/bugs', authenticate, async (req, res) => {
+  const result = bugReportSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ errors: result.error.errors });
   }
 
   try {
     const bug = await prisma.bugReport.create({
       data: {
-        userId: req.userId, // Priradí userId, ak je prihlásený
-        description,
+        userId: req.userId, 
+        description: req.body.description,
       },
     });
 
@@ -658,11 +663,11 @@ app.post('/api/bugs', authenticate, async (req, res) => {
   }
 });
 
-// Získanie všetkých bug reportov
+
 app.get('/api/bugs', async (req, res) => {
   try {
     const bugs = await prisma.bugReport.findMany({
-      include: { user: { select: { username: true } } }, // Pridá meno užívateľa k bug reportu
+      include: { user: { select: { username: true } } },
       orderBy: { createdAt: 'desc' },
     });
     res.json(bugs);

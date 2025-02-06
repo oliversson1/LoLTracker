@@ -65,7 +65,7 @@ model BugReport {
   userId      Int?     
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   description String
-  status      String   @default("open") // "open" alebo "resolved"
+  status      String   @default("open") 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

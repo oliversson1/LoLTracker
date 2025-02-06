@@ -5,88 +5,25 @@ import Cookies from "js-cookie";
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [favoriteChampions, setFavoriteChampions] = useState([]);
-  const [summoner, setSummoner] = useState(null); 
+  const [summoner, setSummoner] = useState(null);
 
-  const refreshAccessToken = async () => {
+  const fetchData = async (url, setter) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/token", {}, {
-        withCredentials: true, 
-      });
-      const newAccessToken = response.data.accessToken;
-      Cookies.set("accessToken", newAccessToken, { expires: 1 / 24 / 4 }); 
-      return newAccessToken;
-    } catch (error) {
-      console.error("Error refreshing access token:", error);
-      return null;
-    }
-  };
-
-  const fetchUserProfile = async () => {
-    let token = Cookies.get("accessToken");
-
-    try {
-      const response = await axios.get("http://localhost:5000/api/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const token = Cookies.get("accessToken");
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
-      setUser(response.data);
+      setter(response.data);
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        console.log("Access token expired, trying to refresh...");
-        token = await refreshAccessToken();
-        if (token) {
-          fetchUserProfile();
-        } else {
-          console.error("Failed to refresh token, logging out...");
-          Cookies.remove("accessToken");
-          Cookies.remove("refreshToken");
-          window.location.href = "/login";
-        }
-      } else {
-        console.error("Error fetching user profile:", error);
-      }
+      console.error(`Error fetching data from ${url}:`, error);
     }
   };
-
-  const fetchFavoriteChampions = async () => {
-    let token = Cookies.get("accessToken");
-
-    try {
-      const response = await axios.get("http://localhost:5000/api/favorite-champions", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
-      setFavoriteChampions(response.data);
-    } catch (error) {
-      console.error("Error fetching favorite champions:", error);
-    }
-  };
-
-  const fetchSummoner = async () => {
-    let token = Cookies.get("accessToken");
-
-    try {
-        const response = await axios.get("/api/user/summoner", {
-            headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
-        });
-
-        console.log("Summoner data received from API:", response.data); 
-        setSummoner(response.data);
-    } catch (error) {
-        console.error("Error fetching summoner:", error);
-    }
-};
-
 
   useEffect(() => {
-    fetchUserProfile();
-    fetchFavoriteChampions();
-    fetchSummoner(); 
+    fetchData("http://localhost:5000/api/user", setUser);
+    fetchData("http://localhost:5000/api/favorite-champions", setFavoriteChampions);
+    fetchData("/api/user/summoner", setSummoner);
   }, []);
 
   return (
@@ -95,23 +32,23 @@ const UserProfile = () => {
         <div className="main_container">
           <h2>{user.username}'s Profile</h2>
           {user.profileImage && (
-            <img
-              src={`http://localhost:5000${user.profileImage}`}
-              alt="Profile"
-              width="100"
-            />
+            <img src={`http://localhost:5000${user.profileImage}`} alt="Profile" width="100" />
           )}
 
           <div style={{ marginTop: "20px", color: "#A0C4FF" }}>
-          <h3>Linked Summoner</h3>
-          {summoner && summoner.gameName ? (
-          <div>
-            <p><strong>{summoner.gameName}#{summoner.tagLine}</strong></p>
-        </div>
-    ) : (
-        <p>No linked summoner.</p>
-    )}
-</div>
+            <h3>Linked Summoner</h3>
+            {summoner && summoner.gameName ? (
+              <div>
+                <p>
+                  <strong>
+                    {summoner.gameName}#{summoner.tagLine}
+                  </strong>
+                </p>
+              </div>
+            ) : (
+              <p>No linked summoner.</p>
+            )}
+          </div>
 
           <div style={{ marginTop: "20px", color: "#A0C4FF" }}>
             <h3>Favorite Champions</h3>

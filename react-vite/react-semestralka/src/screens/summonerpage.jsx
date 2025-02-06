@@ -27,43 +27,39 @@ export default function SummonerPage() {
                 console.error("Error checking summoner ownership:", error);
             });
     }, [account.puuid]);
-    
 
+    const addSummonerToAccount = () => {
+        const requestData = {
+            puuid: account?.puuid,
+            gameName: account?.gameName,
+            tagLine: account?.tagLine,
+        };
 
-const addSummonerToAccount = () => {
-    const requestData = {
-        puuid: account?.puuid,
-        gameName: account?.gameName,
-        tagLine: account?.tagLine,
+        console.log("Sending request to /api/summoners/add with data:", requestData);
+
+        axios.post("/api/summoners/add", requestData, { withCredentials: true })
+            .then(() => {
+                setIsOwned(true);
+                setMessage("Summoner successfully linked to your account.");
+            })
+            .catch((error) => {
+                console.error("Error linking summoner:", error.response?.data || error);
+                setMessage("Error linking summoner: " + (error.response?.data?.error || error.message));
+            });
     };
-
-    console.log("Sending request to /api/summoners/add with data:", requestData);
-
-    axios.post("/api/summoners/add", requestData, { withCredentials: true })
-        .then(() => {
-            setIsOwned(true);
-            setMessage("Summoner successfully linked to your account.");
-        })
-        .catch((error) => {
-            console.error("Error linking summoner:", error.response?.data || error);
-            setMessage("Error linking summoner: " + (error.response?.data?.error || error.message));
-        });
-};
-
-    
-    
 
     const profileIconUrl = `https://ddragon.leagueoflegends.com/cdn/13.21.1/img/profileicon/${summoner.profileIconId}.png`;
 
     return (
         <div className="main_container">
             <img src={profileIconUrl} alt="Summoner icon" width="100" height="100" />
-
             <h1 className="summoners_name">{account.gameName}</h1>
             <p>Level {summoner.summonerLevel}</p>
             <p>Tagline: {account.tagLine}</p> 
 
-            {!isOwned ? (
+            {!username ? (
+                <p>Please log in to link this summoner to your account.</p>
+            ) : !isOwned ? (
                 <button onClick={addSummonerToAccount}>Link summoner to your account</button>
             ) : (
                 <p>{message}</p>

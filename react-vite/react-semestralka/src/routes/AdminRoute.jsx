@@ -6,7 +6,7 @@ const AdminRoute = ({ children }) => {
   const userRole = Cookies.get('role');
 
   if (userRole !== 'admin') {
-    return <Navigate to="/" />;
+    return <Navigate to="/login" />;
   }
 
   return children;

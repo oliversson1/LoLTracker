@@ -253,13 +253,13 @@ img {
 
 
 @media screen and (max-width: 768px) {
+  
   .nav_container nav {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    font-size: 0.75em;
   }
-  body {
-    margin-top: 400px;
-  }
+
 
   .nav_container a {
     font-size: 1em;
@@ -286,6 +286,10 @@ img {
   body {
     margin-top: 350px;
   }
+  .nav_container nav {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 @media(max-width: 320px) {
@@ -293,8 +297,8 @@ img {
     font-size: 1.5em;
   }
 
-  .nav_container {
-    font-size: 0.8em;
+  .nav_container nav {
+    font-size: 0.45em;
   }
 
   .nav_container img {
@@ -304,6 +308,7 @@ img {
   .main_container h1 {
     font-size: 1.8em;
   }
+ 
 }
 
 @media(max-width: 375px) {
@@ -313,6 +318,10 @@ img {
 
   .nav_container {
     font-size: 1em;
+  }
+
+  .nav_container nav {
+    font-size: 0.45em;
   }
 
   .nav_container img {
@@ -331,6 +340,10 @@ img {
 
   .nav_container {
     font-size: 1.2em;
+  }
+
+  .nav_container nav {
+    font-size: 0.5em;
   }
 
   .nav_container img {
@@ -790,12 +803,21 @@ h2 {
   transition: background 0.2s;
 }
 
+.bug-errors {
+  list-style: none; 
+  padding: 0; 
+  margin-bottom: 1vh;
+  color: red;
+  font-size: 14px;
+  text-align: center;
+}
+
 .resolve-button:hover {
   background: #cc0000;
 }
 
 .bug-reporting-container {
-  max-width: 350px; 
+  min-width: 350px; 
   margin: 50px auto;
   padding: 20px;
   background: #fff;
