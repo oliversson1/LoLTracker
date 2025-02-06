@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 export default function Users () {
   const [users, setUsers] = useState([]);
 
-  console.log("Rendering AdminUsers component");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -25,16 +24,29 @@ export default function Users () {
     fetchUsers();
   }, []);
 
+  const handleDelete = async (id) => {
+    const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      setUsers(users.filter(user => user.id !== id)); 
+    } else {
+      alert('Failed to delete user');
+    }
+  };
+
   return (
-    <div>
-      <h1>Admin Panel - User Management</h1>
+    <div  className="main_container">
+      <h1>User Management</h1>
       <ul>
         {users
           .filter((user) => user.role !== 'admin') 
           .map((user) => (
             <li key={user.id}>
               {user.username} - {user.role}
-              <button onClick={() => handleDelete(user.id)}>Delete</button>
+              <button className="delete-button" onClick={() => handleDelete(user.id)}>Delete</button>
             </li>
           ))}
       </ul>

@@ -10,6 +10,8 @@ import FavoriteChampionsPage from './screens/FavoriteChampionsPage.jsx';
 import TournamentPage from './screens/TournamentPage.jsx';
 import PrivateRoute from './routes/PrivateRoute.jsx';
 import Users from './screens/Users.jsx';
+import UserProfile from './screens/UserProfile.jsx';
+
 
 function App() {
   return (
@@ -32,6 +34,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path = "/UserProfile" element = {<UserProfile />} />
         </Routes>
       </div>
     </Router>

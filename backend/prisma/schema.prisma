@@ -8,19 +8,28 @@ generator client {
 }
 
 model User {
-  id                Int          @id @default(autoincrement())
-  username          String       @unique
-  password          String
-  refreshToken      String?
-  role              String       @default("user") 
-  favoriteChampions FavoriteChampion[]
-  tournaments       Tournament[] @relation("UserTournaments")
+  id                   Int            @id @default(autoincrement())
+  username             String         @unique
+  password             String
+  role                 String         @default("user")
+  favoriteChampions    FavoriteChampion[]
+  tournaments          Tournament[]   @relation("UserTournaments")
   tournamentParticipants TournamentParticipant[]
-  riotGameName      String?
-  riotTagLine       String?
-  riotPuuid         String?      @unique
+  riotGameName         String?
+  riotTagLine          String?
+  riotPuuid            String?        @unique
+  refreshTokens        RefreshToken[] 
+  profileImage         String?
 }
 
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
 
 model FavoriteChampion {
   id        Int      @id @default(autoincrement())

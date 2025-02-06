@@ -60,7 +60,7 @@ function ChampionsList() {
                             className="championImage"
                         />
                         <div>
-                            <strong>{champion.name}</strong> - {champion.title}
+                            <strong>{champion.name}</strong>
                         </div>
                     </li>
                 ))}

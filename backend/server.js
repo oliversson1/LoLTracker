@@ -6,50 +6,63 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken'; 
 import { z } from 'zod';
 import dotenv from 'dotenv';
-dotenv.config();
+import multer from 'multer';
 
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}_${file.originalname}`);
+  },
+});
 
+app.use('/uploads', express.static('uploads'));
+
+const upload = multer({ storage: storage });
 const JWT_SECRET = process.env.JWT_SECRET;        
 const REFRESH_SECRET = process.env.REFRESH_SECRET; 
 
 
 function generateAccessToken(userId) {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '60m' });
 }
 
 function generateRefreshToken(userId) {
   return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: '7d' });
 }
 
+
+
 /* ----------------------------------- REGISTRÁCIA ----------------------------------- */
-app.post('/api/register', async (req, res) => {
-  const { username, password } = req.body; 
+app.post('/api/register', upload.single('image'), async (req, res) => {
+  const { username, password } = req.body;
+  const imagePath = req.file ? `/uploads/${req.file.filename}` : null; 
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required.' });
   }
 
   try {
-
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) {
       return res.status(400).json({ error: 'Username already exists.' });
     }
 
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         username,
         password: hashedPassword,
+        profileImage: imagePath, 
       },
     });
 
@@ -59,6 +72,7 @@ app.post('/api/register', async (req, res) => {
     res.status(500).send('Error creating user');
   }
 });
+
 
 /* ----------------------------------- PRIHLÁSENIE ----------------------------------- */
 app.post('/api/login', async (req, res) => {
@@ -82,36 +96,39 @@ app.post('/api/login', async (req, res) => {
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { refreshToken },
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 
+      },
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, 
+      maxAge: 7 * 24 * 60 * 60 * 1000,  
     });
 
     res.cookie('username', user.username, {
-      httpOnly: false,    
-      secure: false,       
+      httpOnly: false,
+      secure: false,
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000, 
+      maxAge: 24 * 60 * 60 * 1000,  
     });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       sameSite: 'strict',
       secure: false,
-      maxAge: 15 * 60 * 1000,
+      maxAge: 15 * 60 * 1000,  
     });
 
     res.cookie('role', user.role, {
-      httpOnly: false, 
+      httpOnly: false,
       sameSite: 'strict',
-      secure: false, 
+      secure: false,
     });
 
     res.json({ message: 'Login successful', accessToken });
@@ -133,8 +150,16 @@ app.post('/api/token', async (req, res) => {
     const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
 
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user) {
       return res.status(403).json({ error: 'Invalid refresh token.' });
+    }
+
+    const storedToken = await prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
+
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+      return res.status(403).json({ error: 'Expired or invalid refresh token.' });
     }
 
     const newAccessToken = generateAccessToken(user.id);
@@ -153,14 +178,14 @@ app.post('/api/logout', async (req, res) => {
   }
 
   try {
-    await prisma.user.updateMany({
-      where: { refreshToken },
-      data: { refreshToken: null },
+    await prisma.refreshToken.delete({
+      where: { token: refreshToken },
     });
 
     res.clearCookie('refreshToken');
     res.clearCookie('username');
-    res.status(200).json({ message: 'Logged out successfully.' });
+    res.clearCookie('role');
+    res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error logging out');
@@ -180,10 +205,10 @@ const authenticate = (req, res, next) => {
     req.userId = decoded.userId;
     next();
   } catch (error) {
+    console.log('Invalid or expired access token:', error.message);
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
-
 
 /* --------------------------------- TOURNAMENT ENDPOINTY --------------------------------- */
 
@@ -415,6 +440,20 @@ app.get('/api/users', authenticate, async (req, res) => {
   }
 });
 
+app.get('/api/user', authenticate, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user); 
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).send('Error fetching user');
+  }
+});
+
+
 /* ---------------------------- Vymazanie používateľa (len pre adminov) ---------------------------- */
 app.delete('/api/users/:id', authenticate, async (req, res) => {
   const { id } = req.params;
@@ -441,6 +480,107 @@ app.delete('/api/users/:id', authenticate, async (req, res) => {
     res.status(500).send('Error deleting user');
   }
 });
+
+
+app.get('/api/protected', (req, res) => {
+  const { accessToken } = req.cookies;  
+
+  try {
+    const decoded = jwt.verify(accessToken, JWT_SECRET);  
+    res.status(200).json({ message: 'Access granted' });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      res.status(401).json({ error: 'Token expired' });
+    } else {
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  }
+});
+
+/*----------------------------------------------Pridanie summonera k profilu----------------------------------------------*/
+app.post('/api/summoners/add', authenticate, async (req, res) => {
+
+  const { puuid, gameName, tagLine } = req.body;
+
+  if (!puuid || !gameName || !tagLine) {
+    console.error("Missing required fields. Received:", { puuid, gameName, tagLine });
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+
+    if (!user) {
+      console.error("User not found in database.");
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        riotPuuid: puuid,
+        riotGameName: gameName,
+        riotTagLine: tagLine,
+      },
+    });
+
+    res.status(200).json({ message: 'Summoner linked successfully (previous summoner was replaced).' });
+  } catch (error) {
+    console.error('Error linking summoner:', error);
+    res.status(500).send('Error linking summoner.');
+  }
+});
+
+
+
+
+app.get('/api/user/summoner', authenticate, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        riotPuuid: true,
+        riotGameName: true,
+        riotTagLine: true,
+      }
+    });
+
+
+    if (!user || !user.riotPuuid) {
+      return res.status(404).json({ error: 'No linked summoner found.' });
+    }
+
+    res.json({
+      puuid: user.riotPuuid,
+      gameName: user.riotGameName,
+      tagLine: user.riotTagLine,
+    });
+
+  } catch (error) {
+    console.error('Error fetching summoner from DB:', error);
+    res.status(500).json({ error: 'Failed to fetch summoner data.' });
+  }
+});
+
+
+
+app.get('/api/summoners/check/:puuid', authenticate, async (req, res) => {
+  const { puuid } = req.params;
+
+  try {
+    const user = await prisma.user.findFirst({ where: { riotPuuid: puuid } });
+
+    if (user) {
+      return res.json({ isOwned: true, owner: user.username });
+    } else {
+      return res.json({ isOwned: false });
+    }
+  } catch (error) {
+    console.error('Error checking summoner ownership:', error);
+    res.status(500).json({ error: 'Failed to check summoner ownership.' });
+  }
+});
+
 
 
 

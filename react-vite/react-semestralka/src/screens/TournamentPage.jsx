@@ -7,7 +7,7 @@ export default function TournamentPage() {
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' | 'error'
+  const [messageType, setMessageType] = useState(''); 
   const username = Cookies.get('username');
 
   const api = axios.create({
@@ -39,7 +39,7 @@ export default function TournamentPage() {
   const createTournament = () => {
     api.post('/api/tournaments', { name, date })
       .then(response => {
-        setTournaments([...tournaments, response.data]);
+        fetchTournaments(); 
         setName('');
         setDate('');
         showMessage('Tournament created successfully!', 'success');
@@ -72,7 +72,6 @@ export default function TournamentPage() {
   };
 
   const deleteTournament = (tournamentId) => {
-    if (!window.confirm("Are you sure you want to delete this tournament?")) return;
 
     api.delete(`/api/tournaments/${tournamentId}`)
       .then(() => {
@@ -122,6 +121,7 @@ export default function TournamentPage() {
                 </div>
 
                 <div className="tournament-actions">
+                
                   {username ? (
                     tournament.participants?.some(p => p.user?.username === username) ? (
                       <button className="leave-btn" onClick={() => leaveTournament(tournament.id)}>Leave</button>
@@ -132,7 +132,7 @@ export default function TournamentPage() {
                     <button className="login-required-btn" disabled>Login to join</button>
                   )}
 
-                  {tournament.creator?.username === username && (
+                    {tournament.creator?.username === username && (
                     <button className="delete-btn" onClick={() => deleteTournament(tournament.id)}>Delete</button>
                   )}
                 </div>

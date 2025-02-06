@@ -51,6 +51,7 @@ export default function Navbar() {
         {username ? (
           <>
             <Link to="/FavoriteChampionsPage">Favorite Champions</Link>
+            <Link to="/UserProfile">Profile</Link>
             <button className="logout_btn" onClick={handleLogout}>Logout ({username})</button>
           </>
         ) : (
