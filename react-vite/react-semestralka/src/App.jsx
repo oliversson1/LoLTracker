@@ -8,9 +8,10 @@ import Login from './screens/login.jsx';
 import ChampionRotations from './screens/ChampionRotations.jsx';
 import FavoriteChampionsPage from './screens/FavoriteChampionsPage.jsx';
 import TournamentPage from './screens/TournamentPage.jsx';
-import PrivateRoute from './routes/PrivateRoute.jsx';
+import AdminRoute from './routes/AdminRoute.jsx';
 import Users from './screens/Users.jsx';
 import UserProfile from './screens/UserProfile.jsx';
+import PrivateRoute from './routes/PrivateRoute.jsx';
 
 
 function App() {
@@ -20,21 +21,52 @@ function App() {
       <div style={{ paddingTop: '10rem' }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/champions" element={<ChampionsPage />} />
-          <Route path="/summonerpage" element={<SummonerPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/championrotations" element={<ChampionRotations />} />
-          <Route path="/FavoriteChampionsPage" element={<FavoriteChampionsPage />} />
+          <Route path="/champions" element={<ChampionsPage />} />
           <Route path="/TournamentPage" element={<TournamentPage />} />
-          <Route
-            path="/Users"
+
+          <Route 
+            path="/summonerpage" 
             element={
               <PrivateRoute>
-                <Users />
+                <SummonerPage />
               </PrivateRoute>
-            }
+            } 
           />
-          <Route path = "/UserProfile" element = {<UserProfile />} />
+          <Route 
+            path="/championrotations" 
+            element={
+              <PrivateRoute>
+                <ChampionRotations />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/FavoriteChampionsPage" 
+            element={
+              <PrivateRoute>
+                <FavoriteChampionsPage />
+              </PrivateRoute>
+            } 
+          />
+          
+          <Route 
+            path="/Users" 
+            element={
+              <AdminRoute>
+                <Users />
+              </AdminRoute>
+            } 
+          />
+          
+          <Route 
+            path="/UserProfile" 
+            element={
+              <PrivateRoute>
+                <UserProfile />
+              </PrivateRoute>
+            } 
+          />
         </Routes>
       </div>
     </Router>

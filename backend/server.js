@@ -15,6 +15,20 @@ app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 
+setInterval(async () => {
+  try {
+    const deletedTokens = await prisma.refreshToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } }, 
+    });
+    if (deletedTokens.count > 0) {
+      console.log(`🗑️ Deleted ${deletedTokens.count} expired refresh tokens.`);
+    }
+  } catch (error) {
+    console.error("❌ Error deleting expired refresh tokens:", error);
+  }
+}, 60 * 1000); 
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -93,14 +107,22 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid username or password.' });
     }
 
-    const accessToken = generateAccessToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
+    await prisma.refreshToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } }
+    });
 
+    await prisma.refreshToken.deleteMany({
+      where: { userId: user.id }
+    });
+
+    const accessToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '2m' });
+    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '10m' });
+    
     await prisma.refreshToken.create({
       data: {
         token: refreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       },
     });
 
@@ -108,21 +130,21 @@ app.post('/api/login', async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,  
+      maxAge: 10 * 60 * 1000, 
     });
 
     res.cookie('username', user.username, {
       httpOnly: false,
       secure: false,
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000,  
+      maxAge: 10 * 60 * 1000, 
     });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       sameSite: 'strict',
       secure: false,
-      maxAge: 15 * 60 * 1000,  
+      maxAge: 2 * 60 * 1000,  
     });
 
     res.cookie('role', user.role, {
@@ -137,6 +159,8 @@ app.post('/api/login', async (req, res) => {
     res.status(500).send('Error logging in');
   }
 });
+
+
 
 
 /* ---------------------------------- OBNOVENIE TOKENU ---------------------------------- */
@@ -185,6 +209,7 @@ app.post('/api/logout', async (req, res) => {
     res.clearCookie('refreshToken');
     res.clearCookie('username');
     res.clearCookie('role');
+    res.clearCookie('accessToken');
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error(error);
